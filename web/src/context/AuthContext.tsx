@@ -31,7 +31,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Automatically locate the local server API base
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://thor-wms-backend.onrender.com/api';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('thor_wms_token'));
