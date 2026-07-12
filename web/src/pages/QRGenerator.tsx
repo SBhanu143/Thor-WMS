@@ -22,10 +22,13 @@ import {
   HelpCircle,
   Mic
 } from 'lucide-react';
+import { formatBinLocation, formatSmartInput, detectInputType } from '../utils/formatter';
+import type { WmsInputType } from '../utils/formatter';
+import { BrowserMultiFormatReader, BarcodeFormat, DecodeHintType } from '@zxing/library';
 
 interface HistoryItem {
   id: string;
-  type: 'product' | 'bin';
+  type: WmsInputType;
   rawInput: string;
   formattedInput: string;
   timestamp: string;
@@ -38,8 +41,8 @@ export const QRGenerator: React.FC = () => {
   // Unified Smart input state
   const [smartInput, setSmartInput] = useState('');
   
-  // Detected Type: 'product' | 'bin' | 'empty'
-  const [detectedType, setDetectedType] = useState<'product' | 'bin' | 'empty'>('empty');
+  // Detected Type: 'product' | 'bin' | 'empty_bin' | 'empty'
+  const [detectedType, setDetectedType] = useState<WmsInputType>('empty');
   
   // Validation error state
   const [validationError, setValidationError] = useState('');
@@ -47,15 +50,20 @@ export const QRGenerator: React.FC = () => {
   // References
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Scanner Simulator Drawer state
+  // Real Camera Barcode/QR Scanner states
   const [showScanner, setShowScanner] = useState(false);
-  const [scanMockCode, setScanMockCode] = useState('');
-  const [scanStatusMsg, setScanStatusMsg] = useState('');
+  const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string>('');
+  const [scannerError, setScannerError] = useState<string>('');
+  const [torchSupported, setTorchSupported] = useState<boolean>(false);
+  const [torchOn, setTorchOn] = useState<boolean>(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
 
   // History & Favorites local state
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [searchHistoryQuery, setSearchHistoryQuery] = useState('');
-  const [favorites, setFavorites] = useState<string[]>(['A-02-D-5', 'B-05-A-8', 'C-01-C-2']);
+  const [favorites, setFavorites] = useState<string[]>(['A-02-D-5', 'B-05-A-8', 'C-01-C-2', 'ABC-123']);
 
   // Button Action states: 'idle' | 'loading' | 'success'
   const [btnStates, setBtnStates] = useState({
@@ -122,64 +130,14 @@ export const QRGenerator: React.FC = () => {
     localStorage.setItem('thor_wms_qr_favs', JSON.stringify(newFavs));
   };
 
-  // SMART BIN FORMATTING Logic: A2D5 -> A-02-D-5
-  const formatBinLocation = (val: string): string => {
-    // Clean characters: uppercase, strip spaces, keep only alphanumeric
-    const clean = val.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    
-    // Regex match: Group 1 (Zone letters), Group 2 (Aisle digits), Group 3 (Shelf letters), Group 4 (Level digits)
-    const match = clean.match(/^([A-Z]+)(\d*)([A-Z]*)(\d*)$/);
-    if (!match) return clean;
+  // formatBinLocation is now imported from ../utils/formatter
 
-    const [_, zone, aisle, shelf, level] = match;
-    let result = zone;
-
-    if (aisle) {
-      // Add leading zero ONLY to the middle aisle number if it is between 1 and 9
-      const parsedAisle = parseInt(aisle, 10);
-      const formattedAisle = (parsedAisle > 0 && parsedAisle < 10 && !aisle.startsWith('0'))
-        ? `0${parsedAisle}`
-        : aisle;
-      result += `-${formattedAisle}`;
-    }
-    
-    if (shelf) {
-      result += `-${shelf}`;
-    }
-
-    if (level) {
-      // DO NOT add leading zero to the final level number
-      result += `-${level}`;
-    }
-
-    return result;
-  };
-
-  // Live input change handler
+  // Live input change handler using shared formatter utility
   const handleInputChange = (val: string) => {
     setValidationError('');
-    
-    if (val.trim() === '') {
-      setSmartInput('');
-      setDetectedType('empty');
-      return;
-    }
-
-    // Auto-detection logic
-    // Check if the cleaned input consists of ONLY numbers
-    const cleanNumTest = val.replace(/[^a-zA-Z0-9]/g, '');
-    const isNumOnly = /^[0-9]+$/.test(cleanNumTest);
-
-    if (isNumOnly) {
-      // Numbers only -> Product Barcode
-      setSmartInput(val.replace(/[^0-9]/g, '')); // keep numeric only
-      setDetectedType('product');
-    } else {
-      // Alphanumeric / letters -> Bin Location Code (live format it)
-      const formatted = formatBinLocation(val);
-      setSmartInput(formatted);
-      setDetectedType('bin');
-    }
+    const { type, formatted } = formatSmartInput(val);
+    setSmartInput(formatted);
+    setDetectedType(type);
   };
 
   // General Input Validator
@@ -190,24 +148,29 @@ export const QRGenerator: React.FC = () => {
     }
 
     if (detectedType === 'product') {
-      // Check length
       if (smartInput.length < 5 || smartInput.length > 16) {
         setValidationError('Warning: Barcode length is non-standard (expect 5-16 digits).');
-        return true; // Warn but allow
+        return true; 
       }
     } else if (detectedType === 'bin') {
-      // Bin code pattern check e.g. A-02-D-5
       const binRegex = /^[A-Z]+-\d+-[A-Z]+-\d+$/;
       if (!binRegex.test(smartInput)) {
         setValidationError('Format warning: Location code does not match standard pattern A-02-D-5.');
-        return true; // Warn but allow
+        return true; 
+      }
+    } else if (detectedType === 'empty_bin') {
+      const emptyBinRegex = /^[A-Z]{3}-\d+$/;
+      if (!emptyBinRegex.test(smartInput)) {
+        setValidationError('Format warning: Empty bin code does not match standard pattern ABC-123.');
+        return true;
       }
     }
     return true;
   };
 
   // Save generated item to history
-  const logToHistory = (type: 'product' | 'bin', data: string) => {
+  const logToHistory = (type: WmsInputType, data: string) => {
+    if (type === 'empty') return;
     const exists = history.slice(0, 3).some(item => item.formattedInput === data && item.type === type);
     if (exists) return;
 
@@ -283,7 +246,7 @@ export const QRGenerator: React.FC = () => {
     setBtnStates(prev => ({ ...prev, download: 'loading' }));
 
     setTimeout(() => {
-      const qrPayload = JSON.stringify({ type: detectedType, value: smartInput });
+      const qrPayload = smartInput;
       const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrPayload)}`;
       
       const link = document.createElement('a');
@@ -306,15 +269,14 @@ export const QRGenerator: React.FC = () => {
     }
   };
 
-  // Helper selectors
-  const handleLoadCode = (code: string, forceType?: 'product' | 'bin') => {
+  const handleLoadCode = (code: string, forceType?: WmsInputType) => {
     if (forceType) {
       setSmartInput(code);
       setDetectedType(forceType);
     } else {
       handleInputChange(code);
     }
-    logToHistory(forceType || (/[a-zA-Z]/g.test(code) ? 'bin' : 'product'), code);
+    logToHistory(forceType || detectInputType(code), code);
     setTimeout(() => inputRef.current?.focus(), 50);
   };
 
@@ -336,29 +298,165 @@ export const QRGenerator: React.FC = () => {
     }
   };
 
-  // Mock scan trigger
-  const handleMockScanSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!scanMockCode) return;
+  const playBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
 
-    setScanStatusMsg('Scanning barcode / QR pattern...');
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
 
-    setTimeout(() => {
-      const code = scanMockCode.trim();
-      handleLoadCode(code);
-      setScanMockCode('');
-      setScanStatusMsg('Scanned successfully!');
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime); // 1000Hz beep tone
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
 
-      // Green scan indicator pulse
-      const indicator = document.getElementById('scan-indicator-pulse');
-      if (indicator) {
-        indicator.style.borderColor = 'var(--success)';
-        setTimeout(() => {
-          if (indicator) indicator.style.borderColor = 'rgba(255,255,255,0.1)';
-        }, 1000);
-      }
-    }, 500);
+      oscillator.start();
+      setTimeout(() => {
+        oscillator.stop();
+        audioCtx.close();
+      }, 150);
+    } catch (e) {
+      console.error('AudioContext beep failed:', e);
+    }
   };
+
+  const startScanning = async () => {
+    setScannerError('');
+    setTorchSupported(false);
+    setTorchOn(false);
+
+    try {
+      await navigator.mediaDevices.getUserMedia({ video: true });
+
+      const hints = new Map();
+      const formats = [
+        BarcodeFormat.QR_CODE,
+        BarcodeFormat.CODE_128,
+        BarcodeFormat.EAN_13,
+        BarcodeFormat.EAN_8,
+        BarcodeFormat.UPC_A,
+        BarcodeFormat.UPC_E,
+        BarcodeFormat.CODE_39
+      ];
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+      const reader = new BrowserMultiFormatReader(hints);
+      codeReaderRef.current = reader;
+
+      const devices = await reader.listVideoInputDevices();
+      setCameras(devices);
+
+      if (devices.length === 0) {
+        setScannerError('No camera devices found.');
+        return;
+      }
+
+      // Try selecting rear/back environment camera by default
+      let initialCamera = devices[0];
+      const rearCam = devices.find(d => 
+        d.label.toLowerCase().includes('back') || 
+        d.label.toLowerCase().includes('rear') || 
+        d.label.toLowerCase().includes('environment')
+      );
+      if (rearCam) {
+        initialCamera = rearCam;
+      }
+      setSelectedCameraId(initialCamera.deviceId);
+
+      decodeDevice(initialCamera.deviceId, reader);
+    } catch (err: any) {
+      console.error('Camera access failed:', err);
+      setScannerError('Camera access denied. Please grant camera permissions to utilize the live scanner.');
+    }
+  };
+
+  const decodeDevice = (deviceId: string, reader: BrowserMultiFormatReader) => {
+    if (!videoRef.current) return;
+
+    reader.reset();
+    reader.decodeFromVideoDevice(deviceId, videoRef.current, (result, err) => {
+      if (result) {
+        const scannedText = result.getText();
+        
+        // Vibrate if supported
+        if (navigator.vibrate) {
+          navigator.vibrate(200);
+        }
+        
+        playBeep();
+        handleInputChange(scannedText);
+        logToHistory(detectInputType(scannedText), scannedText);
+        stopScanning();
+      }
+    });
+
+    // Check flash / torch support after stream binding
+    setTimeout(() => {
+      try {
+        if (videoRef.current && videoRef.current.srcObject) {
+          const stream = videoRef.current.srcObject as MediaStream;
+          const track = stream.getVideoTracks()[0];
+          if (track) {
+            const capabilities = track.getCapabilities() as any;
+            if (capabilities && capabilities.torch) {
+              setTorchSupported(true);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Torch check warning:', e);
+      }
+    }, 1000);
+  };
+
+  const stopScanning = () => {
+    if (codeReaderRef.current) {
+      codeReaderRef.current.reset();
+    }
+    setShowScanner(false);
+    setTorchOn(false);
+    setTorchSupported(false);
+  };
+
+  const switchCamera = (deviceId: string) => {
+    setSelectedCameraId(deviceId);
+    if (codeReaderRef.current) {
+      decodeDevice(deviceId, codeReaderRef.current);
+    }
+  };
+
+  const toggleTorch = async () => {
+    try {
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        const track = stream.getVideoTracks()[0];
+        if (track) {
+          const nextTorch = !torchOn;
+          await track.applyConstraints({
+            advanced: [{ torch: nextTorch }]
+          } as any);
+          setTorchOn(nextTorch);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to toggle torch:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (showScanner) {
+      startScanning();
+    } else {
+      if (codeReaderRef.current) {
+        codeReaderRef.current.reset();
+      }
+    }
+    return () => {
+      if (codeReaderRef.current) {
+        codeReaderRef.current.reset();
+      }
+    };
+  }, [showScanner]);
 
   const renderBtnText = (stateKey: string, label: string) => {
     const val = (btnStates as any)[stateKey];
@@ -379,7 +477,7 @@ export const QRGenerator: React.FC = () => {
     return label;
   };
 
-  const qrPayload = smartInput ? JSON.stringify({ type: detectedType, value: smartInput }) : '';
+  const qrPayload = smartInput;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrPayload)}`;
 
   return (
@@ -432,47 +530,71 @@ export const QRGenerator: React.FC = () => {
         </div>
       </div>
 
-      {/* SCAN EMULATOR */}
+      {/* REAL CAMERA SCANNER */}
       {showScanner && (
         <div className="glass-card" style={{ padding: '20px', marginBottom: '24px', border: '1px solid var(--accent-secondary)' }}>
           <div className="flex-between" style={{ marginBottom: '16px' }}>
             <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Camera size={16} color="var(--accent-secondary)" />
-              Scanner Simulator
+              Live Barcode & QR Scanner
             </h4>
-            <button className="btn btn-outline" style={{ border: 'none', padding: '4px' }} onClick={() => setShowScanner(false)}>
-              Close
+            <button className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '12px', borderColor: 'var(--error)', color: 'var(--error)' }} onClick={stopScanning}>
+              Close Scanner
             </button>
           </div>
-          <div className="grid-2" style={{ gridTemplateColumns: '1.2fr 1fr', gap: '16px' }}>
-            <form onSubmit={handleMockScanSubmit}>
-              <div className="form-group">
-                <input 
-                  type="text" 
-                  className="form-input" 
-                  placeholder="Scan code (e.g. 21134161789 or a2d5)"
-                  value={scanMockCode}
-                  onChange={e => setScanMockCode(e.target.value)}
-                />
+
+          {scannerError ? (
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+              <div style={{ color: 'var(--error)', marginBottom: '14px', fontSize: '14px' }}>
+                {scannerError}
               </div>
-              <button type="submit" className="btn btn-primary">Simulate Scan Input</button>
-              {scanStatusMsg && <div style={{ color: 'var(--accent-secondary)', fontSize: '12px', marginTop: '8px' }}>{scanStatusMsg}</div>}
-            </form>
-            <div 
-              id="scan-indicator-pulse"
-              style={{ 
-                border: '2px dashed rgba(255,255,255,0.1)', 
-                borderRadius: '8px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                fontSize: '11px',
-                color: 'var(--text-muted)'
-              }}
-            >
-              SCANNER CAMERA ACTIVE
+              <button className="btn btn-primary" onClick={startScanning}>
+                Retry Permission / Open Camera
+              </button>
             </div>
-          </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
+              {/* VIDEO VIEWFINDER WITH TARGET BOX OVERLAY */}
+              <div className="scanner-viewport">
+                <video ref={videoRef} className="scanner-video" muted playsInline />
+                <div className="scanner-overlay-box">
+                  <div className="scanner-laser-line" />
+                </div>
+              </div>
+
+              {/* CAMERA SWITCH AND FLASHLIGHT TOGGLE CONTROLS */}
+              <div style={{ display: 'flex', gap: '12px', width: '100%', maxWidth: '480px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {cameras.length > 1 && (
+                  <select 
+                    className="form-input" 
+                    style={{ flex: 1, maxWidth: '240px', padding: '8px 12px' }}
+                    value={selectedCameraId}
+                    onChange={e => switchCamera(e.target.value)}
+                  >
+                    {cameras.map((c, index) => (
+                      <option key={c.deviceId} value={c.deviceId}>
+                        {c.label || `Camera ${index + 1}`}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {torchSupported && (
+                  <button 
+                    className={`btn ${torchOn ? 'btn-primary' : 'btn-outline'}`}
+                    style={{ padding: '8px 16px', fontSize: '13px' }}
+                    onClick={toggleTorch}
+                  >
+                    {torchOn ? 'Flashlight ON' : 'Flashlight OFF'}
+                  </button>
+                )}
+              </div>
+              
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                Fit the barcode or QR code inside the box to scan automatically.
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -542,6 +664,11 @@ export const QRGenerator: React.FC = () => {
                 <CheckCircle size={14} /> ✓ Bin Location Detected
               </span>
             )}
+            {detectedType === 'empty_bin' && (
+              <span className="badge badge-warning" style={{ fontSize: '13px', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <CheckCircle size={14} /> ✓ Empty Bin Detected
+              </span>
+            )}
             {detectedType === 'empty' && (
               <span className="badge" style={{ fontSize: '13px', padding: '6px 14px', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <HelpCircle size={14} /> Waiting for keyboard / scanner input...
@@ -586,7 +713,7 @@ export const QRGenerator: React.FC = () => {
                   style={{ width: '140px', height: '140px', marginBottom: '10px' }} 
                 />
                 <div style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '0.05em' }}>
-                  {detectedType === 'product' ? 'PRODUCT SKU BARCODE' : 'STORAGE BIN CODE'}
+                  {detectedType === 'product' ? 'PRODUCT SKU BARCODE' : detectedType === 'empty_bin' ? 'EMPTY STORAGE BIN' : 'STORAGE BIN CODE'}
                 </div>
                 <div style={{ fontSize: '18px', fontWeight: 900, marginTop: '4px', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
                   {smartInput}
@@ -657,7 +784,7 @@ export const QRGenerator: React.FC = () => {
               <Star size={16} color="var(--warning)" fill="var(--warning)" />
               Favorites Bin Pins
             </h4>
-            {smartInput && detectedType === 'bin' && (
+            {smartInput && (detectedType === 'bin' || detectedType === 'empty_bin') && (
               <button 
                 className="btn btn-outline" 
                 style={{ padding: '4px 8px', fontSize: '11px', border: 'none' }}
@@ -684,7 +811,7 @@ export const QRGenerator: React.FC = () => {
               >
                 <span 
                   style={{ fontWeight: 700, fontSize: '12px', cursor: 'pointer', letterSpacing: '0.05em' }}
-                  onClick={() => handleLoadCode(fav, 'bin')}
+                  onClick={() => handleLoadCode(fav, detectInputType(fav))}
                 >
                   {fav}
                 </span>
@@ -724,8 +851,8 @@ export const QRGenerator: React.FC = () => {
                 style={{ padding: '8px 0', borderBottom: '1px solid var(--border-glass)', gap: '10px' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span className={`badge ${item.type === 'product' ? 'badge-info' : 'badge-success'}`} style={{ fontSize: '8px', padding: '2px 4px' }}>
-                    {item.type.toUpperCase()}
+                  <span className={`badge ${item.type === 'product' ? 'badge-info' : item.type === 'empty_bin' ? 'badge-warning' : 'badge-success'}`} style={{ fontSize: '8px', padding: '2px 4px' }}>
+                    {item.type === 'empty_bin' ? 'EMPTY BIN' : item.type.toUpperCase()}
                   </span>
                   <span 
                     style={{ fontWeight: 600, fontSize: '13px', cursor: 'pointer', letterSpacing: '0.05em' }}

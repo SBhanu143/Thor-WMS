@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocalization } from '../context/LocalizationContext';
 import { Plus, Search, Edit2, Check, X, ShieldAlert, Mic, Trash2, ArrowUpDown } from 'lucide-react';
+import { formatBinLocation } from '../utils/formatter';
 
 export const Inventory: React.FC = () => {
   const { apiCall } = useAuth();
@@ -192,7 +193,7 @@ export const Inventory: React.FC = () => {
       await apiCall('/bins', {
         method: 'POST',
         body: JSON.stringify({
-          code: newBinCode.toUpperCase(),
+          code: formatBinLocation(newBinCode),
           zone: newBinZone,
           aisle: Number(newBinAisle),
           shelf: Number(newBinShelf),
@@ -611,7 +612,7 @@ export const Inventory: React.FC = () => {
             <form onSubmit={handleRegisterBin}>
               <div className="form-group">
                 <label className="form-label">Bin Code Location (e.g. A-02-05)</label>
-                <input type="text" className="form-input" required placeholder="A-02-05" value={newBinCode} onChange={e => setNewBinCode(e.target.value)} />
+                <input type="text" className="form-input" required placeholder="A-02-05" value={newBinCode} onChange={e => setNewBinCode(formatBinLocation(e.target.value))} />
               </div>
 
               <div className="grid-2">
