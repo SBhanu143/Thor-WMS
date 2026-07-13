@@ -17,6 +17,13 @@ export type WmsInputType = 'product' | 'bin' | 'empty_bin' | 'empty';
 export const formatBinLocation = (val: string): string => {
   if (!val) return '';
   const clean = val.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+  // Special formatting rule only for the BB location type
+  if (clean.startsWith('BB')) {
+    const digits = clean.slice(2);
+    return digits ? `BB-${digits}` : 'BB';
+  }
+
   const match = clean.match(/^([A-Z]+)(\d*)([A-Z]*)(\d*)$/);
   if (!match) return clean;
 

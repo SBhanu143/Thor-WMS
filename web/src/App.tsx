@@ -8,6 +8,7 @@ import { QRGenerator } from './pages/QRGenerator';
 import { Audits } from './pages/Audits';
 import { Reporting } from './pages/Reporting';
 import { Settings } from './pages/Settings';
+import { BarcodeSheet } from './pages/BarcodeSheet';
 import { 
   Warehouse, 
   LayoutDashboard, 
@@ -20,7 +21,8 @@ import {
   User,
   Fingerprint,
   Search,
-  Command
+  Command,
+  Barcode
 } from 'lucide-react';
 import { useEffect } from 'react';
 
@@ -29,7 +31,7 @@ const AppContent: React.FC = () => {
   const { locale, setLocale, t } = useLocalization();
   const { theme, setTheme } = useTheme();
 
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'inventory' | 'qr' | 'audits' | 'reporting' | 'settings'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'inventory' | 'qr' | 'barcode-sheet' | 'audits' | 'reporting' | 'settings'>('dashboard');
 
   // Command Palette states
   const [showPalette, setShowPalette] = useState(false);
@@ -48,6 +50,7 @@ const AppContent: React.FC = () => {
     { name: 'Navigate to Dashboard', action: () => setCurrentPage('dashboard'), shortcut: 'Alt+D' },
     { name: 'Navigate to Inventory Catalog', action: () => setCurrentPage('inventory'), shortcut: 'Alt+I' },
     { name: 'Navigate to Smart QR Generator', action: () => setCurrentPage('qr'), shortcut: 'Alt+Q' },
+    { name: 'Navigate to Barcode Sheet Generator', action: () => setCurrentPage('barcode-sheet'), shortcut: 'Alt+B' },
     ...(user && ['Admin', 'WarehouseManager', 'TeamLeader'].includes(user.role) ? [
       { name: 'Navigate to Cycle Audits', action: () => setCurrentPage('audits'), shortcut: 'Alt+A' }
     ] : []),
@@ -89,6 +92,7 @@ const AppContent: React.FC = () => {
         if (key === 'd') { e.preventDefault(); setCurrentPage('dashboard'); }
         if (key === 'i') { e.preventDefault(); setCurrentPage('inventory'); }
         if (key === 'q') { e.preventDefault(); setCurrentPage('qr'); }
+        if (key === 'b') { e.preventDefault(); setCurrentPage('barcode-sheet'); }
         if (key === 'a' && ['Admin', 'WarehouseManager', 'TeamLeader'].includes(user.role)) { e.preventDefault(); setCurrentPage('audits'); }
         if (key === 'r' && ['Admin', 'WarehouseManager'].includes(user.role)) { e.preventDefault(); setCurrentPage('reporting'); }
         if (key === 's') { e.preventDefault(); setCurrentPage('settings'); }
@@ -278,6 +282,14 @@ const AppContent: React.FC = () => {
             {t('qrGenerator')}
           </div>
 
+          <div 
+            className={`menu-item ${currentPage === 'barcode-sheet' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('barcode-sheet')}
+          >
+            <Barcode size={18} />
+            Barcode Sheet
+          </div>
+
           {['Admin', 'WarehouseManager', 'TeamLeader'].includes(user.role) && (
             <div 
               className={`menu-item ${currentPage === 'audits' ? 'active' : ''}`}
@@ -342,6 +354,7 @@ const AppContent: React.FC = () => {
         {currentPage === 'dashboard' && <Dashboard />}
         {currentPage === 'inventory' && <Inventory />}
         {currentPage === 'qr' && <QRGenerator />}
+        {currentPage === 'barcode-sheet' && <BarcodeSheet />}
         {currentPage === 'audits' && <Audits />}
         {currentPage === 'reporting' && <Reporting />}
         {currentPage === 'settings' && <Settings />}
