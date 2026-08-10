@@ -7,8 +7,6 @@ import {
   CheckCircle, 
   AlertTriangle, 
   Activity, 
-  Maximize2, 
-  Volume2, 
   Clock 
 } from 'lucide-react';
 
@@ -17,23 +15,17 @@ export const Dashboard: React.FC = () => {
   const { t } = useLocalization();
 
   const [products, setProducts] = useState<any[]>([]);
-  const [bins, setBins] = useState<any[]>([]);
   const [scans, setScans] = useState<any[]>([]);
-  const [issues, setIssues] = useState<any[]>([]);
   const [audits, setAudits] = useState<any[]>([]);
 
   const loadData = async () => {
     try {
       const p = await apiCall('/products');
-      const b = await apiCall('/bins');
       const s = await apiCall('/scan/history');
-      const i = await apiCall('/issues');
       const a = await apiCall('/audits');
 
       setProducts(p);
-      setBins(b);
       setScans(s);
-      setIssues(i);
       setAudits(a);
     } catch (e) {
       console.error('Failed to load dashboard data:', e);

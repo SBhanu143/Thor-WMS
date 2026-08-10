@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 export interface Employee {
   id: string;
@@ -30,52 +30,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Automatically locate the local server API base
+// Backend base URL — kept for future use, not required for frontend access
 const API_BASE = 'https://thor-wms-backend.onrender.com/api';
 
+// Default user — frontend always appears logged in as Admin
+const DEFAULT_USER: Employee = {
+  id: 'default-admin',
+  username: 'admin',
+  full_name: 'Thor Administrator',
+  role: 'Admin',
+  biometric_enabled: false
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const DUMMY_USER: Employee = {
-    id: 'demo-user',
-    username: 'admin',
-    full_name: 'Thor Administrator',
-    role: 'Admin',
-    biometric_enabled: false
-  };
-
+  // Frontend is always "logged in" — no auth gate on the UI
   const [token, setToken] = useState<string | null>(localStorage.getItem('thor_wms_token'));
-  const [user, setUser] = useState<Employee | null>(DUMMY_USER);
+  const [user, setUser] = useState<Employee | null>(DEFAULT_USER);
   const [settings, setSettings] = useState<WmsSettings | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // isLoading is always false — dashboard loads immediately on open
+  const [isLoading] = useState<boolean>(false);
 
-  // Authenticate session on boot
-  useEffect(() => {
-    const initSession = async () => {
-      const storedToken = localStorage.getItem('thor_wms_token');
-      if (storedToken) {
-        try {
-          const res = await fetch(`${API_BASE}/auth/profile`, {
-            headers: {
-              'Authorization': `Bearer ${storedToken}`
-            }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setUser(data.employee);
-            setSettings(data.settings);
-            setToken(storedToken);
-          } else {
-            // Token expired/invalid
-            logout();
-          }
-        } catch (e) {
-          console.error('Offline or server unreachable, keeping offline token.', e);
-        }
-      }
-      setIsLoading(false);
-    };
-    initSession();
-  }, []);
-
+  // Login kept in code for future backend integration — not called by UI
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
@@ -83,9 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
-
       if (!res.ok) return false;
-
       const data = await res.json();
       localStorage.setItem('thor_wms_token', data.token);
       setToken(data.token);
@@ -98,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // PIN login kept for future use
   const pinLogin = async (username: string, pin: string): Promise<boolean> => {
     try {
       const res = await fetch(`${API_BASE}/auth/pin-login`, {
@@ -105,9 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, pin })
       });
-
       if (!res.ok) return false;
-
       const data = await res.json();
       localStorage.setItem('thor_wms_token', data.token);
       setToken(data.token);
@@ -120,10 +92,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Logout restores the default user — never shows login page
   const logout = () => {
     localStorage.removeItem('thor_wms_token');
     setToken(null);
-    setUser(DUMMY_USER);
+    setUser(DEFAULT_USER);
     setSettings(null);
   };
 
