@@ -34,8 +34,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_BASE = 'https://thor-wms-backend.onrender.com/api';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const DUMMY_USER: Employee = {
+    id: 'demo-user',
+    username: 'admin',
+    full_name: 'Thor Administrator',
+    role: 'Admin',
+    biometric_enabled: false
+  };
+
   const [token, setToken] = useState<string | null>(localStorage.getItem('thor_wms_token'));
-  const [user, setUser] = useState<Employee | null>(null);
+  const [user, setUser] = useState<Employee | null>(DUMMY_USER);
   const [settings, setSettings] = useState<WmsSettings | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -115,7 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('thor_wms_token');
     setToken(null);
-    setUser(null);
+    setUser(DUMMY_USER);
     setSettings(null);
   };
 

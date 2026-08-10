@@ -21,11 +21,6 @@ export const Dashboard: React.FC = () => {
   const [scans, setScans] = useState<any[]>([]);
   const [issues, setIssues] = useState<any[]>([]);
   const [audits, setAudits] = useState<any[]>([]);
-  
-  // Simulator states
-  const [simBarcode, setSimBarcode] = useState('');
-  const [simResult, setSimResult] = useState<any>(null);
-  const [simLoading, setSimLoading] = useState(false);
 
   const loadData = async () => {
     try {
@@ -50,30 +45,6 @@ export const Dashboard: React.FC = () => {
     const interval = setInterval(loadData, 10000); // refresh every 10s
     return () => clearInterval(interval);
   }, []);
-
-  const handleSimulateScan = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!simBarcode) return;
-
-    setSimLoading(true);
-    setSimResult(null);
-    try {
-      const data = await apiCall('/scan', {
-        method: 'POST',
-        body: JSON.stringify({
-          barcode: simBarcode,
-          deviceInfo: 'Web Console Emulator'
-        })
-      });
-      setSimResult(data);
-      setSimBarcode('');
-      loadData(); // reload scanner logs
-    } catch (err: any) {
-      setSimResult({ error: err.message || 'Scan error occurred.' });
-    } finally {
-      setSimLoading(false);
-    }
-  };
 
   // KPIs calculations
   const totalSku = products.length;
@@ -143,7 +114,7 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid-3" style={{ marginBottom: '32px', gridTemplateColumns: '2fr 1fr 1fr' }}>
+      <div className="dashboard-cards">
         
         {/* Recent scans */}
         <div className="glass-card">
@@ -187,61 +158,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Scan emulator widget */}
-        <div className="glass-card">
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-            <Maximize2 size={18} color="var(--accent-secondary)" />
-            Scan Emulator
-          </h3>
-          <form onSubmit={handleSimulateScan}>
-            <div className="form-group">
-              <label className="form-label">Scan Barcode Code</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                placeholder="e.g. TH-HAMMER-001"
-                value={simBarcode} 
-                onChange={(e) => setSimBarcode(e.target.value)} 
-              />
-            </div>
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={simLoading}>
-              {simLoading ? 'Simulating...' : 'Submit Scan'}
-            </button>
-          </form>
-
-          {simResult && (
-            <div style={{ 
-              marginTop: '16px', 
-              padding: '12px', 
-              borderRadius: 'var(--radius-md)', 
-              background: 'rgba(255,255,255,0.03)',
-              border: `1px solid ${simResult.matched ? 'var(--success)' : 'var(--error)'}`
-            }}>
-              {simResult.error ? (
-                <div style={{ color: 'var(--error)', fontSize: '13px' }}>{simResult.error}</div>
-              ) : (
-                <div>
-                  <div className="flex-between" style={{ marginBottom: '6px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 600, color: simResult.matched ? 'var(--success)' : 'var(--error)' }}>
-                      {simResult.matched ? 'MATCH FOUND' : 'MISMATCH WARNING'}
-                    </span>
-                    <Volume2 size={14} color={simResult.matched ? 'var(--success)' : 'var(--error)'} />
-                  </div>
-                  {simResult.matched ? (
-                    <div style={{ fontSize: '13px' }}>
-                      <p style={{ fontWeight: 600 }}>{simResult.product.name}</p>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>SKU: {simResult.product.sku}</p>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>Qty: {simResult.product.quantity} units</p>
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Barcode logged in alert history.</p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* Low Stock Alerts */}
         <div className="glass-card">
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
@@ -280,6 +196,61 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
+      </div>
+    </div>
+  );
+};
+
+// --- Live Scanner Network Visualization ---
+const LiveScannerNetwork: React.FC<{ activeScans: number }> = ({ activeScans }) => {
+  return (
+    <div style={{ position: 'relative', height: '150px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', overflow: 'hidden', padding: '16px', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', zIndex: 2 }}>
+        <div style={{ fontSize: '11px', color: 'var(--accent-secondary)', letterSpacing: '0.1em' }}>LIVE SCANNER NETWORK</div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className="holo-ring" style={{ width: '10px', height: '10px', position: 'relative' }}></div>
+          <span style={{ fontSize: '10px', color: 'var(--success)' }}>ONLINE: 4</span>
+        </div>
+      </div>
+      
+      <div style={{ flex: 1, position: 'relative', marginTop: '10px' }}>
+        <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }}>
+          <defs>
+            <linearGradient id="scan-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="var(--accent-secondary)" stopOpacity="0.2" />
+              <stop offset="50%" stopColor="var(--accent-primary)" />
+              <stop offset="100%" stopColor="var(--accent-secondary)" stopOpacity="0.2" />
+            </linearGradient>
+          </defs>
+          
+          {/* Base lines */}
+          <path d="M 20 50 L 100 50 L 140 80 L 220 80" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+          <path d="M 280 20 L 240 50 L 100 50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+          
+          {/* Active energy lines (animated via CSS) */}
+          <path d="M 20 50 L 100 50 L 140 80 L 220 80" fill="none" stroke="url(#scan-grad)" strokeWidth="2" strokeDasharray="100" className="scanner-line-anim" />
+          <path d="M 280 20 L 240 50 L 100 50" fill="none" stroke="url(#scan-grad)" strokeWidth="2" strokeDasharray="100" className="scanner-line-anim-2" />
+          
+          {/* Nodes */}
+          <circle cx="20" cy="50" r="4" fill="var(--accent-secondary)" className="scanner-node" />
+          <circle cx="100" cy="50" r="6" fill="var(--accent-primary)" className="scanner-hub" />
+          <circle cx="140" cy="80" r="4" fill="var(--accent-secondary)" className="scanner-node" />
+          <circle cx="220" cy="80" r="4" fill="var(--accent-secondary)" className="scanner-node" />
+          <circle cx="280" cy="20" r="4" fill="var(--accent-secondary)" className="scanner-node" />
+        </svg>
+      </div>
+    </div>
+  );
+};
+
+// --- Abstract Warehouse Visualization ---
+const AbstractWarehouse: React.FC = () => {
+  return (
+    <div className="abstract-warehouse-container">
+      <div className="iso-grid">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <div key={i} className={`iso-bin ${i === 4 ? 'active-bin' : i === 7 ? 'low-stock-bin' : ''}`}></div>
+        ))}
       </div>
     </div>
   );

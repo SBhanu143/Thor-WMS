@@ -21,7 +21,7 @@ export const formatBinLocation = (val: string): string => {
   // Special formatting rule only for the BB location type
   if (clean.startsWith('BB')) {
     const digits = clean.slice(2);
-    return digits ? `BB-${digits}` : 'BB';
+    return digits ? `BB${digits}` : 'BB';
   }
 
   const match = clean.match(/^([A-Z]+)(\d*)([A-Z]*)(\d*)$/);

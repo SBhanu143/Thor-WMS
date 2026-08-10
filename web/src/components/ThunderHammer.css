@@ -1,0 +1,108 @@
+.thunder-hammer-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  animation: float 4s ease-in-out infinite;
+}
+
+.thunder-hammer-svg {
+  overflow: visible;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px) rotate3d(0, 1, 0, -5deg); }
+  50% { transform: translateY(-12px) rotate3d(1, 1, 0, 5deg); }
+  100% { transform: translateY(0px) rotate3d(0, 1, 0, -5deg); }
+}
+
+.core-pulse {
+  animation: core-throb 2s infinite alternate;
+}
+
+@keyframes core-throb {
+  0% { opacity: 0.5; filter: brightness(1); }
+  100% { opacity: 1; filter: brightness(2) drop-shadow(0 0 10px #06b6d4); }
+}
+
+.particle {
+  animation: particle-drift 4s infinite linear;
+}
+.p1 { animation-duration: 3s; animation-delay: 0s; }
+.p2 { animation-duration: 5s; animation-delay: 1s; }
+.p3 { animation-duration: 4s; animation-delay: 2s; }
+
+@keyframes particle-drift {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-20px) scale(0); opacity: 0; }
+}
+
+.energy-crack {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: crack-pulse 3s infinite ease-in-out;
+}
+
+@keyframes crack-pulse {
+  0% { stroke-dashoffset: 40; opacity: 0; }
+  20% { opacity: 1; }
+  50% { stroke-dashoffset: 0; filter: brightness(1.5); }
+  80% { opacity: 1; }
+  100% { stroke-dashoffset: -40; opacity: 0; }
+}
+
+.pommel-glow {
+  animation: pommel-pulse 2s infinite alternate;
+}
+
+@keyframes pommel-pulse {
+  from { filter: drop-shadow(0 0 2px #06b6d4) brightness(1); }
+  to { filter: drop-shadow(0 0 10px #06b6d4) brightness(1.5); }
+}
+
+.lightning-arc {
+  opacity: 0;
+  stroke-dasharray: 50;
+  stroke-dashoffset: 50;
+}
+
+.arc-1 {
+  animation: arc-flash 4s infinite 1s;
+}
+
+.arc-2 {
+  animation: arc-flash 5s infinite 2.5s;
+}
+
+@keyframes arc-flash {
+  0% { opacity: 0; stroke-dashoffset: 50; }
+  5% { opacity: 1; stroke-dashoffset: 0; filter: brightness(2); }
+  10% { opacity: 0; stroke-dashoffset: -50; }
+  100% { opacity: 0; }
+}
+
+.hammer-shadow {
+  animation: shadow-pulse 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes shadow-pulse {
+  0% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(0.8); opacity: 0.2; }
+  100% { transform: scale(1); opacity: 0.4; }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .thunder-hammer-container,
+  .energy-crack,
+  .pommel-glow,
+  .lightning-arc,
+  .hammer-shadow {
+    animation: none;
+  }
+  .energy-crack { stroke-dashoffset: 0; opacity: 1; }
+  .lightning-arc { opacity: 0; }
+}

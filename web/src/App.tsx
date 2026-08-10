@@ -24,7 +24,9 @@ import {
   Command,
   Barcode
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { ThunderHammer } from './components/ThunderHammer';
+import { AlertTriangle } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const { token, user, login, pinLogin, logout, isLoading } = useAuth();
@@ -38,13 +40,23 @@ const AppContent: React.FC = () => {
   const [paletteQuery, setPaletteQuery] = useState('');
   const [selectedPaletteIndex, setSelectedPaletteIndex] = useState(0);
 
-  // Login form states
   const [authMode, setAuthMode] = useState<'credentials' | 'pin'>('credentials');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [pin, setPin] = useState('');
   const [authError, setAuthError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+
+  // Boot sequence state
+  const [showBoot, setShowBoot] = useState(true);
+
+  useEffect(() => {
+    // 2-second cinematic boot animation
+    const timer = setTimeout(() => {
+      setShowBoot(false);
+    }, 1800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const commands = [
     { name: 'Navigate to Dashboard', action: () => setCurrentPage('dashboard'), shortcut: 'Alt+D' },
@@ -86,8 +98,8 @@ const AppContent: React.FC = () => {
         return;
       }
 
-      // Alt shortcuts for navigation (only if logged in)
-      if (e.altKey && token && user) {
+      // Alt shortcuts for navigation
+      if (e.altKey && user) {
         const key = e.key.toLowerCase();
         if (key === 'd') { e.preventDefault(); setCurrentPage('dashboard'); }
         if (key === 'i') { e.preventDefault(); setCurrentPage('inventory'); }
@@ -138,148 +150,66 @@ const AppContent: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || showBoot) {
     return (
-      <div style={{ display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', backgroundColor: '#030712' }}>
-        <div className="loader" style={{ width: '40px', height: '40px' }} />
-      </div>
-    );
-  }
-
-  // Not authenticated? Show login screen
-  if (!token || !user) {
-    return (
-      <div className="login-wrap" data-theme={theme}>
-        <div className="glass-card login-card">
-          <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-            <div style={{ 
-              display: 'inline-flex', 
-              padding: '16px', 
-              borderRadius: '50%', 
-              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.2))',
-              color: 'var(--accent-primary)',
-              marginBottom: '16px'
-            }}>
-              <Warehouse size={36} />
-            </div>
-            <h2>{t('loginTitle')}</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '4px' }}>{t('loginSubtitle')}</p>
+      <div className="boot-sequence" data-theme={theme}>
+        <div className="boot-particles"></div>
+        <div className="boot-lightning"></div>
+        <div className="boot-content">
+          <div className="boot-hammer-wrapper">
+            <ThunderHammer size={200} />
+            <div className="boot-energy-ring holo-ring" style={{ width: '280px', height: '280px', top: '-40px', left: '-40px' }}></div>
           </div>
-
-          <form onSubmit={handleLoginSubmit}>
-            {authError && (
-              <div style={{ 
-                padding: '12px', 
-                background: 'rgba(239, 68, 68, 0.1)', 
-                border: '1px solid var(--error)', 
-                color: 'var(--error)', 
-                borderRadius: 'var(--radius-md)',
-                fontSize: '13px',
-                marginBottom: '16px',
-                textAlign: 'center'
-              }}>
-                {authError}
-              </div>
-            )}
-
-            <div className="form-group">
-              <label className="form-label">{t('username')}</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                required 
-                placeholder="e.g. admin"
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)} 
-              />
-            </div>
-
-            {authMode === 'credentials' ? (
-              <div className="form-group">
-                <label className="form-label">{t('password')}</label>
-                <input 
-                  type="password" 
-                  className="form-input" 
-                  required 
-                  placeholder="••••••••"
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                />
-              </div>
-            ) : (
-              <div className="form-group">
-                <label className="form-label">{t('enterPin')}</label>
-                <input 
-                  type="password" 
-                  maxLength={4}
-                  className="form-input" 
-                  required 
-                  placeholder="••••"
-                  style={{ textAlign: 'center', letterSpacing: '1.2em', fontSize: '20px' }}
-                  value={pin} 
-                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} 
-                />
-              </div>
-            )}
-
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px' }} disabled={loginLoading}>
-              {loginLoading ? 'Authenticating...' : t('loginBtn')}
-            </button>
-
-            <button 
-              type="button" 
-              className="btn btn-outline" 
-              style={{ width: '100%', padding: '10px', marginTop: '10px', border: 'none' }}
-              onClick={() => {
-                setAuthMode(authMode === 'credentials' ? 'pin' : 'credentials');
-                setAuthError('');
-              }}
-            >
-              {authMode === 'credentials' ? t('loginPinBtn') : 'Login via Credentials'}
-            </button>
-          </form>
+          <h1 className="boot-title holo-text">THOR WMS</h1>
+          <h2 className="boot-subtitle">INITIALIZING FORGE COMMAND CENTER...</h2>
+          <div className="loading-bar"><div className="loading-progress"></div></div>
         </div>
       </div>
     );
   }
+
 
   // Sidebar Layout
   return (
     <div className="app-container" data-theme={theme}>
       
       {/* Sidebar navigation */}
-      <aside className="sidebar">
+      <aside className="sidebar premium-sidebar">
+        <div className="sidebar-energy-line"></div>
         <div className="logo-container">
-          <Warehouse size={28} style={{ color: 'var(--accent-primary)' }} />
+          <ThunderHammer size={40} />
           <div>
-            <div className="logo-text">Thor WMS</div>
-            <div className="logo-tagline">Productivity</div>
+            <div className="logo-text">THOR WMS</div>
+            <div className="logo-tagline">COMMAND CENTER</div>
           </div>
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative', zIndex: 2 }}>
+          <div className="sidebar-section-title">COMMAND CENTER</div>
           <div 
             className={`menu-item ${currentPage === 'dashboard' ? 'active' : ''}`}
             onClick={() => setCurrentPage('dashboard')}
           >
             <LayoutDashboard size={18} />
-            {t('dashboard')}
+            Dashboard
           </div>
 
+          <div className="sidebar-section-title">INVENTORY</div>
           <div 
             className={`menu-item ${currentPage === 'inventory' ? 'active' : ''}`}
             onClick={() => setCurrentPage('inventory')}
           >
             <Package size={18} />
-            {t('inventory')}
+            Inventory Catalog
           </div>
 
+          <div className="sidebar-section-title">SMART OPERATIONS</div>
           <div 
             className={`menu-item ${currentPage === 'qr' ? 'active' : ''}`}
             onClick={() => setCurrentPage('qr')}
           >
             <QrCode size={18} />
-            {t('qrGenerator')}
+            Thunder Scanner
           </div>
 
           <div 
@@ -287,35 +217,36 @@ const AppContent: React.FC = () => {
             onClick={() => setCurrentPage('barcode-sheet')}
           >
             <Barcode size={18} />
-            Barcode Sheet
+            Barcode Generator
           </div>
 
-          {['Admin', 'WarehouseManager', 'TeamLeader'].includes(user.role) && (
+          {user && ['Admin', 'WarehouseManager', 'TeamLeader'].includes(user.role) && (
             <div 
               className={`menu-item ${currentPage === 'audits' ? 'active' : ''}`}
               onClick={() => setCurrentPage('audits')}
             >
               <ClipboardList size={18} />
-              {t('audits')}
+              Cycle Audits
             </div>
           )}
 
-          {['Admin', 'WarehouseManager'].includes(user.role) && (
+          {user && ['Admin', 'WarehouseManager'].includes(user.role) && (
             <div 
               className={`menu-item ${currentPage === 'reporting' ? 'active' : ''}`}
               onClick={() => setCurrentPage('reporting')}
             >
               <FileText size={18} />
-              {t('reporting')}
+              Reports & Exports
             </div>
           )}
 
+          <div className="sidebar-section-title">SYSTEM</div>
           <div 
             className={`menu-item ${currentPage === 'settings' ? 'active' : ''}`}
             onClick={() => setCurrentPage('settings')}
           >
             <SettingsIcon size={18} />
-            {t('settings')}
+            Settings & Config
           </div>
         </nav>
 
