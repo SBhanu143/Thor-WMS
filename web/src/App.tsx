@@ -40,23 +40,13 @@ const AppContent: React.FC = () => {
   const [paletteQuery, setPaletteQuery] = useState('');
   const [selectedPaletteIndex, setSelectedPaletteIndex] = useState(0);
 
+  // Login form states
   const [authMode, setAuthMode] = useState<'credentials' | 'pin'>('credentials');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [pin, setPin] = useState('');
   const [authError, setAuthError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
-
-  // Boot sequence state
-  const [showBoot, setShowBoot] = useState(true);
-
-  useEffect(() => {
-    // 2-second cinematic boot animation
-    const timer = setTimeout(() => {
-      setShowBoot(false);
-    }, 1800);
-    return () => clearTimeout(timer);
-  }, []);
 
   const commands = [
     { name: 'Navigate to Dashboard', action: () => setCurrentPage('dashboard'), shortcut: 'Alt+D' },
@@ -150,18 +140,12 @@ const AppContent: React.FC = () => {
     }
   };
 
-  if (isLoading || showBoot) {
+  if (isLoading) {
     return (
-      <div className="boot-sequence" data-theme={theme}>
-        <div className="boot-particles"></div>
-        <div className="boot-lightning"></div>
-        <div className="boot-content">
-          <div className="boot-hammer-wrapper">
-            <ThunderHammer size={200} />
-            <div className="boot-energy-ring holo-ring" style={{ width: '280px', height: '280px', top: '-40px', left: '-40px' }}></div>
-          </div>
-          <h1 className="boot-title holo-text">THOR WMS</h1>
-          <h2 className="boot-subtitle">INITIALIZING FORGE COMMAND CENTER...</h2>
+      <div className="loading-screen" data-theme={theme}>
+        <div className="loading-content">
+          <ThunderHammer size={160} className="loading-hammer" />
+          <h2 className="loading-title">THOR WMS</h2>
           <div className="loading-bar"><div className="loading-progress"></div></div>
         </div>
       </div>
@@ -175,7 +159,6 @@ const AppContent: React.FC = () => {
       
       {/* Sidebar navigation */}
       <aside className="sidebar premium-sidebar">
-        <div className="sidebar-energy-line"></div>
         <div className="logo-container">
           <ThunderHammer size={40} />
           <div>
@@ -184,7 +167,7 @@ const AppContent: React.FC = () => {
           </div>
         </div>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', position: 'relative', zIndex: 2 }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div className="sidebar-section-title">COMMAND CENTER</div>
           <div 
             className={`menu-item ${currentPage === 'dashboard' ? 'active' : ''}`}
