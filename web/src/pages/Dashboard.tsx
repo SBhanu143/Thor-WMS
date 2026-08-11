@@ -1,14 +1,109 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocalization } from '../context/LocalizationContext';
+import extVersionData from '../extension-version.json';
 import { 
   Package, 
   MapPin, 
   CheckCircle, 
   AlertTriangle, 
   Activity, 
-  Clock 
+  Clock,
+  Download,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
+
+const ExtensionPromoCard: React.FC = () => {
+  const [showInstall, setShowInstall] = useState(false);
+  const webStoreUrl = import.meta.env.VITE_CHROME_WEB_STORE_URL;
+  const version = extVersionData.version || "1.0.0";
+  const zipPath = `/downloads/Thor-WMS-Extension-v${version}.zip`;
+
+  return (
+    <div className="glass-card" style={{ 
+      background: 'linear-gradient(145deg, #0d1520, #060b13)',
+      border: '1px solid var(--accent-primary)',
+      boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: '-50%',
+        right: '-10%',
+        width: '300px',
+        height: '300px',
+        background: 'radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 70%)',
+        pointerEvents: 'none'
+      }}></div>
+      
+      <div className="flex-between" style={{ alignItems: 'flex-start', marginBottom: '20px', position: 'relative', zIndex: 1 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '20px' }}>⚡</span>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, letterSpacing: '0.05em', color: '#e2e8f0' }}>THOR WMS</h3>
+            <span className="badge badge-info" style={{ fontSize: '10px' }}>EXTENSION v{version}</span>
+          </div>
+          <p style={{ color: 'var(--accent-secondary)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>
+            Warehouse Command Center
+          </p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '13px', maxWidth: '400px', lineHeight: 1.5 }}>
+            Your warehouse tools, always beside your dashboard. Generate QR codes, format bin locations, and use your device camera as a real scanner without switching tabs.
+          </p>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={12} color="var(--success)" /> Smart QR</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={12} color="var(--success)" /> Barcode</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={12} color="var(--success)" /> Scanner</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={12} color="var(--success)" /> Bin Formatter</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={12} color="var(--success)" /> BB Formatter</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={12} color="var(--success)" /> Empty Bin</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+        {webStoreUrl ? (
+          <a href={webStoreUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-lg" style={{ display: 'inline-flex' }}>
+            <ExternalLink size={16} /> ADD TO CHROME
+          </a>
+        ) : (
+          <a href={zipPath} download className="btn btn-primary btn-lg" style={{ display: 'inline-flex' }}>
+            <Download size={16} /> DOWNLOAD FOR TESTING
+          </a>
+        )}
+        
+        <button className="btn btn-ghost" onClick={() => setShowInstall(!showInstall)} style={{ fontSize: '12px' }}>
+          {showInstall ? <ChevronUp size={16} /> : <ChevronDown size={16} />} How to install
+        </button>
+      </div>
+
+      {showInstall && (
+        <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glass)', position: 'relative', zIndex: 1 }}>
+          <h4 style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Installation Guide</h4>
+          
+          {webStoreUrl ? (
+            <ol style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.8 }}>
+              <li>Click <strong>ADD TO CHROME</strong> to open the Chrome Web Store.</li>
+              <li>Click <strong>Add to Chrome</strong> on the store page.</li>
+              <li>Click the Extensions puzzle icon in Chrome and <strong>Pin</strong> Thor WMS.</li>
+            </ol>
+          ) : (
+            <ol style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-secondary)', fontSize: '12px', lineHeight: 1.8 }}>
+              <li><strong>Download</strong> the ZIP file and <strong>Extract</strong> it to a folder.</li>
+              <li>Open Chrome and navigate to <code style={{ background: 'rgba(0,0,0,0.5)', padding: '2px 6px', borderRadius: '4px' }}>chrome://extensions</code>.</li>
+              <li>Enable <strong>Developer mode</strong> (toggle in top right).</li>
+              <li>Click <strong>Load unpacked</strong> and select the extracted extension folder.</li>
+              <li>Click the Extensions puzzle icon in Chrome and <strong>Pin</strong> Thor WMS.</li>
+            </ol>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const Dashboard: React.FC = () => {
   const { apiCall } = useAuth();
@@ -108,6 +203,9 @@ export const Dashboard: React.FC = () => {
 
       <div className="dashboard-cards">
         
+        {/* Extension Promotional Card */}
+        <ExtensionPromoCard />
+
         {/* Recent scans */}
         <div className="glass-card">
           <div className="flex-between" style={{ marginBottom: '20px' }}>

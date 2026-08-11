@@ -1,0 +1,29 @@
+{
+  "name": "thor-wms-extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc --noEmit && vite build",
+    "package": "node scripts/package-extension.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "jsbarcode": "^3.11.6",
+    "lucide-react": "^0.511.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.304",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "adm-zip": "^0.6.0",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  }
+}
