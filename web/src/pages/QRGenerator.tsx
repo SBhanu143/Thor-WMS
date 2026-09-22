@@ -481,11 +481,114 @@ export const QRGenerator: React.FC = () => {
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrPayload)}`;
 
   return (
-    <div style={{ paddingBottom: '80px', maxWidth: '800px', margin: '0 auto' }}>
+    <div className="sqr-mobile-container" style={{ paddingBottom: '80px', maxWidth: '800px', margin: '0 auto' }}>
+      <style>{`
+        .sqr-mobile-only { display: none !important; }
+        
+        @media (max-width: 767px) {
+          .sqr-desktop-only { display: none !important; }
+          .sqr-mobile-only { display: flex !important; }
+          .sqr-mobile-only-block { display: block !important; }
+          
+          /* Container padding to prevent overlap with bottom nav */
+          .sqr-mobile-container {
+            padding-bottom: 120px !important;
+          }
+
+          /* Toolbar */
+          .sqr-mobile-toolbar {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            padding: 16px !important;
+          }
+          .sqr-mobile-toolbar-actions {
+            width: 100% !important;
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+            margin-top: 12px !important;
+          }
+          .sqr-mobile-toolbar-actions > button {
+            padding: 8px !important;
+            font-size: 11px !important;
+            white-space: nowrap !important;
+            width: 100% !important;
+          }
+
+          /* Input */
+          .sqr-mobile-input-wrapper {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+          .sqr-mobile-input-box {
+            width: 100% !important;
+          }
+          .sqr-mobile-input {
+            width: 100% !important;
+            font-size: 17px !important;
+            padding: 14px 44px 14px 14px !important;
+            box-sizing: border-box !important;
+          }
+          .sqr-mobile-mic-btn {
+            position: absolute !important;
+            right: 4px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 44px !important;
+            height: 44px !important;
+            margin: 0 !important;
+          }
+
+          /* Detection Status */
+          .sqr-mobile-status-row {
+            margin-top: 12px !important;
+          }
+          .sqr-mobile-status-row span.badge {
+            font-size: 11px !important;
+            padding: 6px 12px !important;
+            height: 38px !important;
+          }
+
+          /* QR Preview Card */
+          .sqr-mobile-qr-wrapper {
+            margin-bottom: 20px !important;
+          }
+          .sqr-mobile-qr-card {
+            width: 100% !important;
+            max-width: 300px !important;
+            padding: 16px !important;
+          }
+          .sqr-mobile-qr-img {
+            width: 130px !important;
+            height: 130px !important;
+            margin-bottom: 8px !important;
+          }
+          .sqr-mobile-qr-title {
+            font-size: 14px !important;
+          }
+          .sqr-mobile-qr-code {
+            font-size: 16px !important;
+          }
+
+          /* Action Grid */
+          .sqr-mobile-actions-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+          }
+          .sqr-mobile-actions-grid > button {
+            grid-column: span 1 !important;
+            height: 48px !important;
+            padding: 0 !important;
+          }
+          .sqr-mobile-actions-grid > .btn-generate {
+            grid-column: span 2 !important;
+          }
+        }
+      `}</style>
       
       {/* QUICK FLOATING ACTIONS */}
       <div 
-        className="glass-card" 
+        className="glass-card sqr-mobile-toolbar" 
         style={{ 
           position: 'sticky', 
           top: '20px', 
@@ -502,15 +605,16 @@ export const QRGenerator: React.FC = () => {
           <Zap size={16} color="var(--accent-secondary)" />
           <span style={{ fontWeight: 800, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Smart QR
+            <div className="sqr-mobile-only-block" style={{ fontSize: '10px', opacity: 0.7, textTransform: 'none', fontWeight: 500, marginTop: '2px', letterSpacing: '0' }}>Scan or generate warehouse labels</div>
           </span>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="sqr-mobile-toolbar-actions" style={{ display: 'flex', gap: '10px' }}>
           <button 
             className="btn btn-outline"
             style={{ padding: '8px 14px', fontSize: '13px', borderColor: 'var(--accent-secondary)', color: 'var(--accent-secondary)' }}
             onClick={() => setShowScanner(prev => !prev)}
           >
-            <Camera size={14} /> Open Scanner
+            <Camera size={14} /> <span className="sqr-desktop-only">Open</span> Scanner
           </button>
           <button 
             className="btn btn-outline"
@@ -518,14 +622,14 @@ export const QRGenerator: React.FC = () => {
             onClick={handlePrint}
             disabled={!smartInput}
           >
-            <Printer size={14} /> Print Preview
+            <Printer size={14} /> Print <span className="sqr-desktop-only">Preview</span>
           </button>
           <button 
             className="btn btn-outline"
             style={{ padding: '8px 14px', fontSize: '13px' }}
             onClick={handleClear}
           >
-            Reset Form
+            Reset <span className="sqr-desktop-only">Form</span>
           </button>
         </div>
       </div>
@@ -606,12 +710,12 @@ export const QRGenerator: React.FC = () => {
           <label className="form-label" style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Scan Barcode or Type location string
           </label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ position: 'relative', flex: 1 }}>
+          <div className="sqr-mobile-input-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="sqr-mobile-input-box" style={{ position: 'relative', flex: 1 }}>
               <input 
                 ref={inputRef}
                 type="text" 
-                className="form-input" 
+                className="form-input sqr-mobile-input" 
                 style={{ 
                   fontSize: '24px', 
                   fontWeight: 'bold', 
@@ -626,6 +730,7 @@ export const QRGenerator: React.FC = () => {
               {smartInput && (
                 <button 
                   type="button"
+                  className="sqr-desktop-only"
                   style={{ 
                     position: 'absolute', 
                     right: '18px', 
@@ -643,7 +748,7 @@ export const QRGenerator: React.FC = () => {
             </div>
             <button 
               type="button" 
-              className={`voice-mic-btn ${isListeningVoice ? 'listening' : ''}`}
+              className={`voice-mic-btn sqr-mobile-mic-btn ${isListeningVoice ? 'listening' : ''}`}
               style={{ width: '58px', height: '58px' }}
               onClick={startVoiceInput}
               title="Dictate code (Voice recognition)"
@@ -653,7 +758,7 @@ export const QRGenerator: React.FC = () => {
           </div>
 
           {/* DYNAMIC DETECTOR STATUS BADGE */}
-          <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
+          <div className="sqr-mobile-status-row" style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
             {detectedType === 'product' && (
               <span className="badge badge-info" style={{ fontSize: '13px', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <CheckCircle size={14} /> ✓ Product Barcode Detected
@@ -684,9 +789,10 @@ export const QRGenerator: React.FC = () => {
         </div>
 
         {/* LIVE QR LABEL CARD PREVIEW */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
+        <div className="sqr-mobile-qr-wrapper" style={{ display: 'flex', justifyContent: 'center', marginBottom: '28px' }}>
           <div 
             id="printable-smart-label"
+            className="sqr-mobile-qr-card"
             style={{ 
               background: '#ffffff', 
               color: '#000000', 
@@ -701,7 +807,7 @@ export const QRGenerator: React.FC = () => {
               boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
             }}
           >
-            <div style={{ fontSize: '15px', fontWeight: 800, borderBottom: '2px solid #000', width: '100%', paddingBottom: '6px', marginBottom: '10px', letterSpacing: '0.05em' }}>
+            <div className="sqr-mobile-qr-title" style={{ fontSize: '15px', fontWeight: 800, borderBottom: '2px solid #000', width: '100%', paddingBottom: '6px', marginBottom: '10px', letterSpacing: '0.05em' }}>
               THOR CREATIONS WMS
             </div>
             
@@ -710,12 +816,13 @@ export const QRGenerator: React.FC = () => {
                 <img 
                   src={qrCodeUrl} 
                   alt="Dynamic QR" 
+                  className="sqr-mobile-qr-img"
                   style={{ width: '140px', height: '140px', marginBottom: '10px' }} 
                 />
                 <div style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '0.05em' }}>
                   {detectedType === 'product' ? 'PRODUCT SKU BARCODE' : detectedType === 'empty_bin' ? 'EMPTY STORAGE BIN' : 'STORAGE BIN CODE'}
                 </div>
-                <div style={{ fontSize: '18px', fontWeight: 900, marginTop: '4px', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
+                <div className="sqr-mobile-qr-code" style={{ fontSize: '18px', fontWeight: 900, marginTop: '4px', letterSpacing: '0.05em', fontFamily: 'monospace' }}>
                   {smartInput}
                 </div>
               </>
@@ -728,9 +835,9 @@ export const QRGenerator: React.FC = () => {
         </div>
 
         {/* UNIFIED HORIZONTAL ACTIONS ROW */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
+        <div className="sqr-mobile-actions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
           <button 
-            className="btn btn-primary" 
+            className="btn btn-primary btn-generate" 
             style={{ gridColumn: 'span 5', padding: '12px' }}
             disabled={!smartInput}
             onClick={handleGenerate}
