@@ -69,35 +69,35 @@ export const CashCalculator: React.FC<CashCalculatorProps> = ({ onAddToCash }) =
   const btnStyle = { padding: '20px', fontSize: '20px', fontWeight: 600, borderRadius: '12px' };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
       
       {/* Calculator Interface */}
       <div className="glass-card" style={{ maxWidth: '400px', margin: '0 auto', width: '100%' }}>
         
-        <div style={{ background: 'rgba(0,0,0,0.4)', padding: '20px', borderRadius: '12px', marginBottom: '20px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.05)', boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
-          <div style={{ color: 'var(--text-muted)', fontSize: '14px', height: '20px', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{equation}</div>
-          <div style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.05em', overflowWrap: 'break-word', wordBreak: 'break-all' }}>{display}</div>
+        <div style={{ background: 'rgba(0,0,0,0.4)', padding: '20px', borderRadius: '12px', marginBottom: '20px', textAlign: 'right', border: '1px solid rgba(255,255,255,0.05)', boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.5)' }}>
+          <div style={{ color: 'var(--text-muted)', fontSize: '14px', height: '20px', marginBottom: '8px' }}>{equation}</div>
+          <div style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.05em' }}>{display}</div>
         </div>
 
-        <div className="calculator-grid">
-          <button className="btn btn-outline calculator-btn" style={{ color: 'var(--error)', fontSize: '18px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('AC')}>AC</button>
-          <button className="btn btn-outline calculator-btn" style={{ color: 'var(--warning)', fontSize: '18px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('C')}><Delete size={20}/></button>
-          <button className="btn btn-outline calculator-btn" style={{ color: 'var(--accent-primary)', fontSize: '18px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('%')}>%</button>
-          <button className="btn btn-outline calculator-btn" style={{ color: 'var(--accent-primary)', fontSize: '18px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('÷')}>÷</button>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+          <button className="btn btn-outline" style={{ ...btnStyle, color: 'var(--error)' }} onClick={() => handlePress('AC')}>AC</button>
+          <button className="btn btn-outline" style={{ ...btnStyle, color: 'var(--warning)' }} onClick={() => handlePress('C')}><Delete size={20}/></button>
+          <button className="btn btn-outline" style={{ ...btnStyle, color: 'var(--accent-primary)' }} onClick={() => handlePress('%')}>%</button>
+          <button className="btn btn-outline" style={{ ...btnStyle, color: 'var(--accent-primary)' }} onClick={() => handlePress('÷')}>÷</button>
 
-          {[7, 8, 9].map(n => <button key={n} className="btn calculator-btn" style={{ background: 'rgba(255,255,255,0.05)', fontSize: '20px', fontWeight: 600, padding: 0 }} onClick={() => handlePress(n.toString())}>{n}</button>)}
-          <button className="btn btn-outline calculator-btn" style={{ color: 'var(--accent-primary)', fontSize: '18px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('×')}>×</button>
+          {[7, 8, 9].map(n => <button key={n} className="btn" style={{ ...btnStyle, background: 'rgba(255,255,255,0.05)' }} onClick={() => handlePress(n.toString())}>{n}</button>)}
+          <button className="btn btn-outline" style={{ ...btnStyle, color: 'var(--accent-primary)' }} onClick={() => handlePress('×')}>×</button>
 
-          {[4, 5, 6].map(n => <button key={n} className="btn calculator-btn" style={{ background: 'rgba(255,255,255,0.05)', fontSize: '20px', fontWeight: 600, padding: 0 }} onClick={() => handlePress(n.toString())}>{n}</button>)}
-          <button className="btn btn-outline calculator-btn" style={{ color: 'var(--accent-primary)', fontSize: '18px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('−')}>−</button>
+          {[4, 5, 6].map(n => <button key={n} className="btn" style={{ ...btnStyle, background: 'rgba(255,255,255,0.05)' }} onClick={() => handlePress(n.toString())}>{n}</button>)}
+          <button className="btn btn-outline" style={{ ...btnStyle, color: 'var(--accent-primary)' }} onClick={() => handlePress('−')}>−</button>
 
-          {[1, 2, 3].map(n => <button key={n} className="btn calculator-btn" style={{ background: 'rgba(255,255,255,0.05)', fontSize: '20px', fontWeight: 600, padding: 0 }} onClick={() => handlePress(n.toString())}>{n}</button>)}
-          <button className="btn btn-outline calculator-btn" style={{ color: 'var(--accent-primary)', fontSize: '18px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('+')}>+</button>
+          {[1, 2, 3].map(n => <button key={n} className="btn" style={{ ...btnStyle, background: 'rgba(255,255,255,0.05)' }} onClick={() => handlePress(n.toString())}>{n}</button>)}
+          <button className="btn btn-outline" style={{ ...btnStyle, color: 'var(--accent-primary)' }} onClick={() => handlePress('+')}>+</button>
 
-          <button className="btn calculator-btn" style={{ background: 'rgba(255,255,255,0.05)', fontSize: '18px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('00')}>00</button>
-          <button className="btn calculator-btn" style={{ background: 'rgba(255,255,255,0.05)', fontSize: '20px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('0')}>0</button>
-          <button className="btn calculator-btn" style={{ background: 'rgba(255,255,255,0.05)', fontSize: '20px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('.')}>.</button>
-          <button className="btn btn-primary calculator-btn" style={{ fontSize: '20px', fontWeight: 600, padding: 0 }} onClick={() => handlePress('=')}>=</button>
+          <button className="btn" style={{ ...btnStyle, background: 'rgba(255,255,255,0.05)' }} onClick={() => handlePress('00')}>00</button>
+          <button className="btn" style={{ ...btnStyle, background: 'rgba(255,255,255,0.05)' }} onClick={() => handlePress('0')}>0</button>
+          <button className="btn" style={{ ...btnStyle, background: 'rgba(255,255,255,0.05)' }} onClick={() => handlePress('.')}>.</button>
+          <button className="btn btn-primary" style={{ ...btnStyle }} onClick={() => handlePress('=')}>=</button>
         </div>
 
         <button className="btn btn-outline btn-block" style={{ marginTop: '20px', padding: '16px', display: 'flex', gap: '8px', justifyContent: 'center' }} onClick={handleTransfer}>
