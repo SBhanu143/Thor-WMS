@@ -10,7 +10,7 @@ export const CashReports: React.FC = () => {
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="cash-grid-person-date">
           <div>
             <label className="form-label">START DATE</label>
             <input type="date" className="form-input" />

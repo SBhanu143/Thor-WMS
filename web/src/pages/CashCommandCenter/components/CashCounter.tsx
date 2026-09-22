@@ -103,10 +103,10 @@ export const CashCounter: React.FC<CashCounterProps> = ({ calculatorAmount }) =>
 
 
   return (
-    <div className="cash-counter-container" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="cash-counter-container">
       
       {/* User / Entry Info */}
-      <div className="glass-card" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+      <div className="glass-card cash-grid-person-date">
         <div>
           <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><User size={14} /> PERSON NAME</label>
           <input type="text" className="form-input" value={personName} onChange={e => setPersonName(e.target.value)} placeholder="Enter Name" />
@@ -118,17 +118,17 @@ export const CashCounter: React.FC<CashCounterProps> = ({ calculatorAmount }) =>
       </div>
 
       {/* Credit / Debit Segment */}
-      <div style={{ display: 'flex', background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '4px' }}>
+      <div className="cash-grid-credit-debit" style={{ background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '4px' }}>
         <button 
           className="btn" 
-          style={{ flex: 1, background: entryType === 'credit' ? 'var(--success)' : 'transparent', color: entryType === 'credit' ? '#fff' : 'var(--text-secondary)' }}
+          style={{ background: entryType === 'credit' ? 'var(--success)' : 'transparent', color: entryType === 'credit' ? '#fff' : 'var(--text-secondary)' }}
           onClick={() => setEntryType('credit')}
         >
           CREDIT
         </button>
         <button 
           className="btn" 
-          style={{ flex: 1, background: entryType === 'debit' ? 'var(--error)' : 'transparent', color: entryType === 'debit' ? '#fff' : 'var(--text-secondary)' }}
+          style={{ background: entryType === 'debit' ? 'var(--error)' : 'transparent', color: entryType === 'debit' ? '#fff' : 'var(--text-secondary)' }}
           onClick={() => setEntryType('debit')}
         >
           DEBIT
@@ -136,7 +136,7 @@ export const CashCounter: React.FC<CashCounterProps> = ({ calculatorAmount }) =>
       </div>
 
       {/* Target Amount Input */}
-      <div className="glass-card" style={{ padding: '24px', border: '1px solid rgba(255,255,255,0.1)', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), transparent)' }}>
+      <div className="glass-card" style={{ padding: '24px 16px', border: '1px solid rgba(255,255,255,0.1)', background: 'linear-gradient(135deg, rgba(255,255,255,0.05), transparent)' }}>
         <label className="form-label" style={{ fontSize: '12px', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>AMOUNT TO TALLY / TARGET AMOUNT</label>
         <div style={{ position: 'relative' }}>
           <span style={{ position: 'absolute', left: '16px', top: '12px', fontSize: '24px', color: 'var(--text-muted)' }}>₹</span>
@@ -154,7 +154,7 @@ export const CashCounter: React.FC<CashCounterProps> = ({ calculatorAmount }) =>
       </div>
 
       {/* Live Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+      <div className="cash-summary-cards">
         <div className="glass-card" style={{ textAlign: 'center', padding: '16px', borderTop: '3px solid #fbbf24' }}>
           <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>TARGET AMOUNT</div>
           <div style={{ fontSize: '20px', fontWeight: 800 }}>{formatIndianCurrency(parsedTarget)}</div>
@@ -170,37 +170,37 @@ export const CashCounter: React.FC<CashCounterProps> = ({ calculatorAmount }) =>
       </div>
 
       {/* Denominations & Extras Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+      <div className="cash-denominations-grid">
         
         {/* Banknotes */}
-        <div className="glass-card">
+        <div className="glass-card" style={{ padding: '16px 12px' }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontSize: '14px', letterSpacing: '0.05em' }}><Banknote size={16} color="var(--accent-primary)" /> BANKNOTES</h3>
           {denominations.notes.map(val => (
-            <div key={val} className="denomination-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '70px', height: '40px', borderRadius: '6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 900, fontSize: '14px', color: '#fff',
-                  background: val === 500 ? 'linear-gradient(135deg, #4b5563, #374151)' : val === 200 ? 'linear-gradient(135deg, #ea580c, #9a3412)' : val === 100 ? 'linear-gradient(135deg, #4f46e5, #312e81)' : val === 50 ? 'linear-gradient(135deg, #0284c7, #075985)' : val === 20 ? 'linear-gradient(135deg, #16a34a, #14532d)' : 'linear-gradient(135deg, #9333ea, #581c87)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.5)'
-                }}>
-                  <div style={{ lineHeight: 1 }}>₹{val}</div>
-                  <div style={{ fontSize: '9px', opacity: 0.8, letterSpacing: '0.05em', marginTop: '2px' }}>NOTE</div>
-                </div>
+            <div key={val} className="denomination-row-flex">
+              <div style={{
+                width: '70px', height: '40px', borderRadius: '6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 900, fontSize: '14px', color: '#fff',
+                background: val === 500 ? 'linear-gradient(135deg, #4b5563, #374151)' : val === 200 ? 'linear-gradient(135deg, #ea580c, #9a3412)' : val === 100 ? 'linear-gradient(135deg, #4f46e5, #312e81)' : val === 50 ? 'linear-gradient(135deg, #0284c7, #075985)' : val === 20 ? 'linear-gradient(135deg, #16a34a, #14532d)' : 'linear-gradient(135deg, #9333ea, #581c87)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.5)'
+              }}>
+                <div style={{ lineHeight: 1 }}>₹{val}</div>
+                <div style={{ fontSize: '9px', opacity: 0.8, letterSpacing: '0.05em', marginTop: '2px' }}>NOTE</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>×</span>
                 <input 
                   type="text" 
                   inputMode="numeric"
                   pattern="[0-9]*"
                   className="form-input" 
-                  style={{ width: '70px', textAlign: 'center', fontSize: '16px', fontWeight: 'bold' }}
+                  style={{ width: '100%', minWidth: '0', textAlign: 'center', fontSize: '16px', fontWeight: 'bold' }}
                   value={notes[val] || ''}
                   onChange={(e) => handleNoteChange(val, e.target.value)}
                   placeholder="0"
                 />
               </div>
-              <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+              <div className="denom-subtotal">
                 {formatIndianCurrency(val * (notes[val] ? Number(notes[val]) : 0))}
               </div>
             </div>
@@ -209,34 +209,35 @@ export const CashCounter: React.FC<CashCounterProps> = ({ calculatorAmount }) =>
 
         <div>
           {/* Coins */}
-          <div className="glass-card" style={{ marginBottom: '20px' }}>
+          <div className="glass-card" style={{ marginBottom: '20px', padding: '16px 12px' }}>
             <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontSize: '14px', letterSpacing: '0.05em' }}><Coins size={16} color="#fbbf24" /> COINS</h3>
             {denominations.coins.map(val => (
-              <div key={val} className="denomination-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', marginBottom: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{
-                    width: '40px', height: '40px', borderRadius: '50%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 900, fontSize: '12px', color: '#fff',
-                    background: 'radial-gradient(circle at 30% 30%, #fcd34d, #b45309)',
-                    border: '2px solid rgba(255,255,255,0.4)',
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.5)'
-                  }}>
-                    <div style={{ lineHeight: 1 }}>₹{val}</div>
-                    <div style={{ fontSize: '8px', opacity: 0.9, marginTop: '2px' }}>COIN</div>
-                  </div>
+              <div key={val} className="denomination-row-flex">
+                <div style={{
+                  width: '40px', height: '40px', borderRadius: '50%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 900, fontSize: '12px', color: '#fff',
+                  background: 'radial-gradient(circle at 30% 30%, #fcd34d, #b45309)',
+                  border: '2px solid rgba(255,255,255,0.4)',
+                  boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.5)',
+                  margin: '0 auto'
+                }}>
+                  <div style={{ lineHeight: 1 }}>₹{val}</div>
+                  <div style={{ fontSize: '8px', opacity: 0.9, marginTop: '2px' }}>COIN</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>×</span>
                   <input 
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
                     className="form-input" 
-                    style={{ width: '70px', textAlign: 'center', fontSize: '16px', fontWeight: 'bold' }}
+                    style={{ width: '100%', minWidth: '0', textAlign: 'center', fontSize: '16px', fontWeight: 'bold' }}
                     value={coins[val] || ''}
                     onChange={(e) => handleCoinChange(val, e.target.value)}
                     placeholder="0"
                   />
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                <div className="denom-subtotal">
                   {formatIndianCurrency(val * (coins[val] ? Number(coins[val]) : 0))}
                 </div>
               </div>
@@ -266,7 +267,7 @@ export const CashCounter: React.FC<CashCounterProps> = ({ calculatorAmount }) =>
 
       {/* Final Summary & Actions */}
       <div className="glass-card" style={{ textAlign: 'center' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '16px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', marginBottom: '20px' }}>
+        <div className="cash-final-summary">
           <div>
             <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL PIECES</div>
             <div style={{ fontSize: '18px', fontWeight: 800 }}>{totalPieces}</div>
@@ -286,15 +287,15 @@ export const CashCounter: React.FC<CashCounterProps> = ({ calculatorAmount }) =>
         </div>
 
         <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Amount in Words</div>
-        <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--accent-secondary)', marginBottom: '20px' }}>
+        <div className="amount-in-words" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--accent-secondary)', marginBottom: '20px' }}>
           {numberToWords(grandTotal)}
         </div>
         
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <button className="btn btn-primary" style={{ flex: 1, minWidth: '150px' }} onClick={handleSave}><Save size={16} /> SAVE ENTRY</button>
-          <button className="btn btn-outline" style={{ flex: 1, minWidth: '120px' }}><Share2 size={16} /> SHARE</button>
-          <button className="btn btn-outline" style={{ flex: 1, minWidth: '120px' }}><Printer size={16} /> RECEIPT</button>
-          <button className="btn btn-ghost" onClick={handleClear} style={{ color: 'var(--error)' }}><RefreshCw size={16} /> CLEAR</button>
+        <div className="action-buttons-grid">
+          <button className="btn btn-primary action-btn-large" onClick={handleSave}><Save size={16} /> SAVE ENTRY</button>
+          <button className="btn btn-outline action-btn-large"><Share2 size={16} /> SHARE</button>
+          <button className="btn btn-outline action-btn-large"><Printer size={16} /> RECEIPT</button>
+          <button className="btn btn-ghost action-btn-large" onClick={handleClear} style={{ color: 'var(--error)' }}><RefreshCw size={16} /> CLEAR</button>
         </div>
       </div>
       

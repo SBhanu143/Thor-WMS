@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useLocalization } from '../../context/LocalizationContext';
 import { History, Calculator, Wallet, FileText, Settings } from 'lucide-react';
 
+import './CashMobile.css';
+
 import { CashCounter } from './components/CashCounter';
 import { CashCalculator } from './components/CashCalculator';
 import { CashHistory } from './components/CashHistory';
@@ -27,26 +29,18 @@ export const CashCommandCenter: React.FC = () => {
   ] as const;
 
   return (
-    <div style={{ paddingBottom: '40px' }}>
+    <div className="cash-command-center">
       
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-          <Wallet size={24} color="var(--accent-primary)" /> CASH COMMAND CENTER
+      <div className="cash-header">
+        <h2>
+          <Wallet size={24} color="var(--accent-primary)" style={{ flexShrink: 0, marginTop: '2px' }} /> 
+          <span>CASH COMMAND<br/>CENTER</span>
         </h2>
-        <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>Professional denomination and financial management.</p>
+        <p>Professional cash management</p>
       </div>
 
       {/* Tabs */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '8px', 
-        marginBottom: '24px', 
-        overflowX: 'auto', 
-        background: 'rgba(0,0,0,0.3)', 
-        padding: '8px', 
-        borderRadius: '12px',
-        border: '1px solid rgba(255,255,255,0.05)'
-      }}>
+      <div className="cash-tabs-container">
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -54,27 +48,14 @@ export const CashCommandCenter: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
+              className="cash-tab-btn"
               style={{
-                flex: 1,
-                minWidth: 'max-content',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: 'none',
                 background: isActive ? 'var(--accent-primary)' : 'transparent',
                 color: isActive ? '#fff' : 'var(--text-secondary)',
-                fontWeight: isActive ? 700 : 600,
-                fontSize: '12px',
-                letterSpacing: '0.05em',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
                 boxShadow: isActive ? '0 4px 12px rgba(34,211,238,0.3)' : 'none'
               }}
             >
-              <Icon size={16} /> {tab.label}
+              <Icon size={16} style={{ flexShrink: 0 }} /> <span>{tab.label}</span>
             </button>
           )
         })}

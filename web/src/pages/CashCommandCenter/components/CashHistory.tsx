@@ -69,7 +69,7 @@ export const CashHistory: React.FC = () => {
       </div>
 
       {/* History Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
         {filtered.map(entry => (
           <div key={entry.id} className="glass-card" style={{ position: 'relative', overflow: 'hidden', borderLeft: `4px solid ${entry.type === 'credit' ? 'var(--success)' : 'var(--error)'}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>

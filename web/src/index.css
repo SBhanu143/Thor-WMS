@@ -779,7 +779,7 @@ h1, h2, h3, h4, h5, h6 {
   .main-content {
     margin-left: 0 !important;
     padding: 16px !important;
-    padding-bottom: 90px !important;
+    padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
   }
   .grid-2, .grid-3, .kpi-grid, .dashboard-cards {
     grid-template-columns: 1fr !important;
@@ -790,14 +790,14 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 70px;
+    min-height: 70px;
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-glass);
     backdrop-filter: blur(20px);
     z-index: 1000;
     justify-content: space-around;
-    align-items: center;
-    padding-bottom: 4px;
+    align-items: stretch;
+    padding-bottom: env(safe-area-inset-bottom);
   }
   .mobile-bottom-nav .nav-item {
     display: flex;
