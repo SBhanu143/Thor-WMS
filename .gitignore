@@ -1,1 +1,4 @@
 web/.env
+extension/node_modules/
+web/node_modules/
+node_modules/

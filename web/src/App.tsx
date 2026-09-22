@@ -5,7 +5,7 @@ import { useTheme } from './context/ThemeContext';
 import { Dashboard } from './pages/Dashboard';
 import { Inventory } from './pages/Inventory';
 import { QRGenerator } from './pages/QRGenerator';
-import { Audits } from './pages/Audits';
+import { CashCommandCenter } from './pages/CashCommandCenter';
 import { Reporting } from './pages/Reporting';
 import { Settings } from './pages/Settings';
 import { BarcodeSheet } from './pages/BarcodeSheet';
@@ -13,7 +13,7 @@ import {
   LayoutDashboard,
   Package,
   QrCode,
-  ClipboardList,
+  Wallet,
   FileText,
   Settings as SettingsIcon,
   User,
@@ -28,7 +28,7 @@ const AppContent: React.FC = () => {
   const { theme, setTheme } = useTheme();
 
   const [currentPage, setCurrentPage] = useState<
-    'dashboard' | 'inventory' | 'qr' | 'barcode-sheet' | 'audits' | 'reporting' | 'settings'
+    'dashboard' | 'inventory' | 'qr' | 'barcode-sheet' | 'cash' | 'reporting' | 'settings'
   >('dashboard');
 
   // Command Palette states
@@ -41,7 +41,7 @@ const AppContent: React.FC = () => {
     { name: 'Navigate to Inventory Catalog', action: () => setCurrentPage('inventory'), shortcut: 'Alt+I' },
     { name: 'Navigate to Smart QR Generator', action: () => setCurrentPage('qr'), shortcut: 'Alt+Q' },
     { name: 'Navigate to Barcode Sheet Generator', action: () => setCurrentPage('barcode-sheet'), shortcut: 'Alt+B' },
-    { name: 'Navigate to Cycle Audits', action: () => setCurrentPage('audits'), shortcut: 'Alt+A' },
+    { name: 'Navigate to Cash Command Center', action: () => setCurrentPage('cash'), shortcut: 'Alt+A' },
     { name: 'Navigate to Reporting & Logs', action: () => setCurrentPage('reporting'), shortcut: 'Alt+R' },
     { name: 'Navigate to Settings & Configuration', action: () => setCurrentPage('settings'), shortcut: 'Alt+S' },
     { name: 'Toggle Theme to Dark Mode', action: () => setTheme('dark'), shortcut: '' },
@@ -78,7 +78,7 @@ const AppContent: React.FC = () => {
         if (key === 'i') { e.preventDefault(); setCurrentPage('inventory'); }
         if (key === 'q') { e.preventDefault(); setCurrentPage('qr'); }
         if (key === 'b') { e.preventDefault(); setCurrentPage('barcode-sheet'); }
-        if (key === 'a') { e.preventDefault(); setCurrentPage('audits'); }
+        if (key === 'a') { e.preventDefault(); setCurrentPage('cash'); }
         if (key === 'r') { e.preventDefault(); setCurrentPage('reporting'); }
         if (key === 's') { e.preventDefault(); setCurrentPage('settings'); }
       }
@@ -156,11 +156,11 @@ const AppContent: React.FC = () => {
           </div>
 
           <div
-            className={`menu-item ${currentPage === 'audits' ? 'active' : ''}`}
-            onClick={() => setCurrentPage('audits')}
+            className={`menu-item ${currentPage === 'cash' ? 'active' : ''}`}
+            onClick={() => setCurrentPage('cash')}
           >
-            <ClipboardList size={18} />
-            Cycle Audits
+            <Wallet size={18} />
+            Cash Denomination
           </div>
 
           <div
@@ -214,7 +214,7 @@ const AppContent: React.FC = () => {
         {currentPage === 'inventory' && <Inventory />}
         {currentPage === 'qr' && <QRGenerator />}
         {currentPage === 'barcode-sheet' && <BarcodeSheet />}
-        {currentPage === 'audits' && <Audits />}
+        {currentPage === 'cash' && <CashCommandCenter />}
         {currentPage === 'reporting' && <Reporting />}
         {currentPage === 'settings' && <Settings />}
       </main>
