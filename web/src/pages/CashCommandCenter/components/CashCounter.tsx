@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, Calendar, CreditCard, Banknote, Coins, Plus, Minus, RefreshCw, Save, Share2, Printer } from 'lucide-react';
 import { denominations, calculateDenominationTotals, calculateGrandTotal, numberToWords, formatIndianCurrency } from '../utils/cashEngine';
-import { saveCashEntry, CashEntry } from '../utils/cashStorage';
+import { saveCashEntry } from '../utils/cashStorage';
+import type { CashEntry } from '../utils/cashStorage';
 import { generatePdfBlob, generatePngBlob, getReceiptSummaryText, downloadBlob, printReceipt } from '../utils/cashReceiptGenerator';
 
 interface CashCounterProps {

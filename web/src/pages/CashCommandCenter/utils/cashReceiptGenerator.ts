@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { CashEntry } from './cashStorage';
+import type { CashEntry } from './cashStorage';
 import { formatIndianCurrency, denominations } from './cashEngine';
 
 export const getReceiptStatus = (entry: CashEntry) => {
