@@ -225,9 +225,9 @@ const AppContent: React.FC = () => {
           <LayoutDashboard size={20} />
           <span>Dashboard</span>
         </div>
-        <div className={`nav-item ${currentPage === 'inventory' ? 'active' : ''}`} onClick={() => setCurrentPage('inventory')}>
-          <Package size={20} />
-          <span>Inventory</span>
+        <div className={`nav-item ${currentPage === 'cash' ? 'active' : ''}`} onClick={() => setCurrentPage('cash')}>
+          <Wallet size={20} />
+          <span>Cash</span>
         </div>
         <div className={`nav-item ${currentPage === 'qr' ? 'active' : ''}`} onClick={() => setCurrentPage('qr')}>
           <QrCode size={20} />
