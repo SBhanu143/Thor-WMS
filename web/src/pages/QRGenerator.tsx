@@ -728,22 +728,44 @@ export const QRGenerator: React.FC = () => {
                 onChange={e => handleInputChange(e.target.value)}
               />
               {smartInput && (
-                <button 
-                  type="button"
-                  className="sqr-desktop-only"
-                  style={{ 
-                    position: 'absolute', 
-                    right: '18px', 
-                    top: '24px', 
-                    border: 'none', 
-                    background: 'transparent', 
-                    color: 'var(--text-secondary)',
-                    cursor: 'pointer' 
-                  }}
-                  onClick={handleClear}
-                >
-                  <X size={20} />
-                </button>
+                <>
+                  {/* Desktop clear button */}
+                  <button
+                    type="button"
+                    className="sqr-desktop-only"
+                    style={{
+                      position: 'absolute',
+                      right: '18px',
+                      top: '24px',
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer'
+                    }}
+                    onClick={handleClear}
+                  >
+                    <X size={20} />
+                  </button>
+                  {/* Mobile clear button */}
+                  <button
+                    type="button"
+                    className="sqr-mobile-only"
+                    style={{
+                      position: 'absolute',
+                      right: '70px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      border: 'none',
+                      background: 'transparent',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      padding: '4px'
+                    }}
+                    onClick={handleClear}
+                  >
+                    <X size={20} />
+                  </button>
+                </>
               )}
             </div>
             <button 
