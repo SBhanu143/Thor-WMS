@@ -11,6 +11,11 @@ export interface CashEntry {
   manualAddition: number;
   manualDeduction: number;
   grandTotal: number;
+  targetAmount?: number;
+  receiptMeta?: {
+    pdfUrl?: string;
+    pngUrl?: string;
+  };
 }
 
 export const getCashHistory = (): CashEntry[] => {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, Calendar, CreditCard, Banknote, Coins, Plus, Minus, RefreshCw, Save, Share2, Printer } from 'lucide-react';
 import { denominations, calculateDenominationTotals, calculateGrandTotal, numberToWords, formatIndianCurrency } from '../utils/cashEngine';
-import { saveCashEntry } from '../utils/cashStorage';
+import { saveCashEntry, CashEntry } from '../utils/cashStorage';
+import { generatePdfBlob, generatePngBlob, getReceiptSummaryText, downloadBlob, printReceipt } from '../utils/cashReceiptGenerator';
 
 interface CashCounterProps {
   onAddAmountToCalculator?: (amount: number) => void;
@@ -9,6 +10,15 @@ interface CashCounterProps {
 }
 
 export const CashCounter: React.FC<CashCounterProps> = ({ calculatorAmount }) => {
+
+
+  // NEW STATE FOR SAVED ENTRY
+  const [savedEntry, setSavedEntry] = useState<CashEntry | null>(null);
+
+  // LOADING STATES FOR RECEIPT GENERATION
+  const [loadingPdf, setLoadingPdf] = useState(false);
+  const [loadingPng, setLoadingPng] = useState(false);
+
   const [personName, setPersonName] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [entryType, setEntryType] = useState<'credit' | 'debit'>('credit');
